@@ -7,6 +7,8 @@ CREATE TABLE IF NOT EXISTS project (
     name VARCHAR(255) NOT NULL,
     description TEXT,
     topic VARCHAR(500) NOT NULL,
+    status VARCHAR(32) NOT NULL DEFAULT 'CREATED',
+    base_paper_id text,
     is_deleted SMALLINT NOT NULL DEFAULT 0,
     create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
