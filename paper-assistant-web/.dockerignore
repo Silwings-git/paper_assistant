@@ -1,0 +1,5 @@
+src/
+!.mvn/
+.mvn/wrapper/
+*.log
+pom.xml

@@ -1,0 +1,1096 @@
+openapi: 3.1.0
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+tags:
+- name: 论文分析
+  description: LLM驱动的论文创新分析、交叉对比和研究方向推荐
+- name: 项目管理
+  description: 研究项目的增删改查及基础论文设置
+- name: 定时任务
+  description: 定时任务的远程执行接口（供分布式调度系统调用）
+- name: 论文检索
+  description: 论文的搜索、查询和异步任务状态管理
+paths:
+  /api/v1/projects/{id}:
+    get:
+      tags:
+      - 项目管理
+      summary: 查询项目详情
+      description: 根据ID获取项目的完整信息
+      operationId: getById
+      parameters:
+      - name: id
+        in: path
+        description: 项目ID
+        required: true
+        schema:
+          type: string
+        example: 1
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "200":
+          description: 查询成功
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseProjectDTO"
+        "404":
+          description: 项目不存在
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseProjectDTO"
+    put:
+      tags:
+      - 项目管理
+      summary: 更新项目
+      description: 更新指定项目的名称、描述或研究方向
+      operationId: update
+      parameters:
+      - name: id
+        in: path
+        description: 项目ID
+        required: true
+        schema:
+          type: string
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProjectRequest"
+        required: true
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "200":
+          description: 更新成功
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseProjectDTO"
+        "404":
+          description: 项目不存在
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseProjectDTO"
+    delete:
+      tags:
+      - 项目管理
+      summary: 删除项目
+      description: 根据ID删除指定项目
+      operationId: delete
+      parameters:
+      - name: id
+        in: path
+        description: 项目ID
+        required: true
+        schema:
+          type: string
+        example: 1
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "200":
+          description: 删除成功
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "404":
+          description: 项目不存在
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+  /api/v1/projects/{id}/base-paper:
+    put:
+      tags:
+      - 项目管理
+      summary: 设置基础论文
+      description: 为项目指定一篇基础论文，作为后续分析的基准
+      operationId: setBasePaper
+      parameters:
+      - name: id
+        in: path
+        description: 项目ID
+        required: true
+        schema:
+          type: string
+        example: 1
+      requestBody:
+        description: 基础论文ID请求体
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetBasePaperRequest"
+        required: true
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "200":
+          description: 设置成功
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseProjectDTO"
+        "404":
+          description: 项目或论文不存在
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseProjectDTO"
+  /api/v1/scheduler/{job-name}/execute:
+    post:
+      tags:
+      - 定时任务
+      summary: 执行定时任务
+      description: 手动触发指定名称的定时任务执行，供远程调度系统调用
+      operationId: execute
+      parameters:
+      - name: job-name
+        in: path
+        description: 任务名称
+        required: true
+        schema:
+          type: string
+        example: task-status-cleanup
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "404":
+          description: 任务不存在
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseString"
+        "200":
+          description: 任务执行成功
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseString"
+  /api/v1/projects:
+    get:
+      tags:
+      - 项目管理
+      summary: 列出所有项目
+      description: 获取当前用户的所有研究项目列表
+      operationId: list
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListProjectDTO"
+    post:
+      tags:
+      - 项目管理
+      summary: 创建项目
+      description: 创建一个新的研究项目，包含名称、描述和研究方向
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProjectRequest"
+        required: true
+      responses:
+        "400":
+          description: 参数验证失败
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "200":
+          description: 创建成功
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseProjectDTO"
+  /api/v1/papers/search:
+    post:
+      tags:
+      - 论文检索
+      summary: 触发论文搜索
+      description: 根据关键词异步搜索项目相关的学术论文，返回任务ID用于后续状态查询
+      operationId: search
+      parameters:
+      - name: projectId
+        in: query
+        description: 项目ID
+        required: true
+        schema:
+          type: string
+        example: 1
+      - name: keyword
+        in: query
+        description: 搜索关键词
+        required: true
+        schema:
+          type: string
+        example: RAG retrieval augmented generation
+      responses:
+        "400":
+          description: 参数错误：projectId或keyword为空
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "200":
+          description: 搜索任务已创建，返回任务ID
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseString"
+  /api/v1/analysis/{projectId}:
+    post:
+      tags:
+      - 论文分析
+      summary: 触发论文分析
+      description: 异步分析项目中的论文，包含深度理解、交叉对比和创新方向生成三个阶段
+      operationId: triggerAnalysis
+      parameters:
+      - name: projectId
+        in: path
+        description: 项目ID
+        required: true
+        schema:
+          type: string
+        example: 1
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "200":
+          description: 分析任务已创建，返回任务ID
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseString"
+        "404":
+          description: 项目不存在
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseString"
+  /api/v1/papers:
+    get:
+      tags:
+      - 论文检索
+      summary: 分页查询论文列表
+      description: 获取项目下的所有论文列表，支持分页和排序
+      operationId: list_1
+      parameters:
+      - name: projectId
+        in: query
+        description: 项目ID
+        required: true
+        schema:
+          type: string
+        example: 1
+      - name: page
+        in: query
+        description: 页码
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+        example: 1
+      - name: size
+        in: query
+        description: 每页条数 (最大100)
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+          minimum: 1
+        example: 20
+      - name: sort
+        in: query
+        description: "排序方式: relevance(相关性), date(日期), citations(引用)"
+        required: false
+        schema:
+          type: string
+          default: relevance
+        example: relevance
+      responses:
+        "400":
+          description: 参数错误
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "200":
+          description: 查询成功
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePagePaperDTO"
+  /api/v1/papers/{id}:
+    get:
+      tags:
+      - 论文检索
+      summary: 获取论文详情
+      description: 根据ID获取单篇论文的完整信息
+      operationId: getById_1
+      parameters:
+      - name: id
+        in: path
+        description: 论文ID
+        required: true
+        schema:
+          type: string
+        example: 1
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "200":
+          description: 查询成功
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePaperDTO"
+        "404":
+          description: 论文不存在
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePaperDTO"
+  /api/v1/papers/tasks/{taskId}:
+    get:
+      tags:
+      - 论文检索
+      summary: 查询任务状态
+      description: 根据任务ID查询异步搜索任务的当前状态和进度
+      operationId: getTaskStatus
+      parameters:
+      - name: taskId
+        in: path
+        description: 任务ID
+        required: true
+        schema:
+          type: string
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "404":
+          description: 任务不存在
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseTaskStatusDTO"
+        "200":
+          description: 查询成功
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseTaskStatusDTO"
+  /api/v1/papers/tasks/active:
+    get:
+      tags:
+      - 论文检索
+      summary: 查询活跃检索任务
+      description: 获取项目当前进行中的检索任务状态
+      operationId: getActiveTask
+      parameters:
+      - name: projectId
+        in: query
+        description: 项目ID
+        required: true
+        schema:
+          type: string
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseTaskStatusDTO"
+  /api/v1/analysis/{projectId}/result:
+    get:
+      tags:
+      - 论文分析
+      summary: 查询分析结果
+      description: 获取项目的LLM分析结果，包含研究空白、基础论文推荐和创新点
+      operationId: getResult
+      parameters:
+      - name: projectId
+        in: path
+        description: 项目ID
+        required: true
+        schema:
+          type: string
+        example: 1
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "404":
+          description: 项目或分析结果不存在
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAnalysisResult"
+        "200":
+          description: 查询成功
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAnalysisResult"
+  /api/v1/analysis/tasks/{taskId}:
+    get:
+      tags:
+      - 论文分析
+      summary: 查询分析任务状态
+      description: 根据任务ID查询异步分析任务的当前状态和进度
+      operationId: getTaskStatus_1
+      parameters:
+      - name: taskId
+        in: path
+        description: 任务ID
+        required: true
+        schema:
+          type: string
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "404":
+          description: 任务不存在
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseTaskStatusDTO"
+        "200":
+          description: 查询成功
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseTaskStatusDTO"
+  /api/v1/analysis/tasks/active:
+    get:
+      tags:
+      - 论文分析
+      summary: 查询活跃分析任务
+      description: 获取项目当前进行中的分析任务状态
+      operationId: getActiveTask_1
+      parameters:
+      - name: projectId
+        in: query
+        description: 项目ID
+        required: true
+        schema:
+          type: string
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVoid"
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseTaskStatusDTO"
+components:
+  schemas:
+    ApiResponseVoid:
+      type: object
+      description: 统一 API 响应包装
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: 响应状态码，200 表示成功
+          example: 200
+        message:
+          type: string
+          description: 响应消息
+          example: success
+        data:
+          type: object
+          description: 响应数据，类型为泛型，根据具体接口确定
+        timestamp:
+          type: string
+          format: date-time
+          description: 响应时间戳
+          example: 2026-04-19T12:00:00
+    UpdateProjectRequest:
+      type: object
+      description: 更新项目请求体
+      properties:
+        name:
+          type: string
+          description: 项目名称
+          example: RAG 论文复现 v2
+        description:
+          type: string
+          description: 项目描述
+          example: 优化后的 RAG 方案
+        topic:
+          type: string
+          description: 研究方向
+          example: 混合检索、重排序、多路召回
+    ApiResponseProjectDTO:
+      type: object
+      description: 统一 API 响应包装
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: 响应状态码，200 表示成功
+          example: 200
+        message:
+          type: string
+          description: 响应消息
+          example: success
+        data:
+          $ref: "#/components/schemas/ProjectDTO"
+          description: 响应数据，类型为泛型，根据具体接口确定
+        timestamp:
+          type: string
+          format: date-time
+          description: 响应时间戳
+          example: 2026-04-19T12:00:00
+    ProjectDTO:
+      type: object
+      description: 项目信息
+      properties:
+        id:
+          type: string
+          description: 项目ID
+          example: proj-001
+        name:
+          type: string
+          description: 项目名称
+          example: RAG 论文复现
+        description:
+          type: string
+          description: 项目描述
+          example: 使用 RAG 技术复现论文代码
+        topic:
+          type: string
+          description: 研究方向
+          example: 检索增强生成、向量数据库、语义检索
+        status:
+          type: string
+          description: "项目状态: CREATED(已创建)/SEARCHING(检索中)/SEARCHED(检索完成)/ANALYZING(分\
+            析中)/ANALYZED(分析完成)"
+          example: CREATED
+        basePaperId:
+          type: string
+          description: 基础论文ID
+          example: paper-001
+        basePaperTitle:
+          type: string
+          description: 基础论文标题
+          example: Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks
+        paperCount:
+          type: integer
+          format: int32
+          description: 论文数量
+          example: 10
+        createTime:
+          type: string
+          format: date-time
+          description: 创建时间
+          example: 2026-04-19T12:00:00
+        updateTime:
+          type: string
+          format: date-time
+          description: 更新时间
+          example: 2026-04-19T14:30:00
+    SetBasePaperRequest:
+      type: object
+      properties:
+        paperId:
+          type: string
+          description: 论文ID
+          example: 1
+    ApiResponseString:
+      type: object
+      description: 统一 API 响应包装
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: 响应状态码，200 表示成功
+          example: 200
+        message:
+          type: string
+          description: 响应消息
+          example: success
+        data:
+          type: string
+          description: 响应数据，类型为泛型，根据具体接口确定
+        timestamp:
+          type: string
+          format: date-time
+          description: 响应时间戳
+          example: 2026-04-19T12:00:00
+    CreateProjectRequest:
+      type: object
+      description: 创建项目请求体
+      properties:
+        name:
+          type: string
+          description: 项目名称
+          example: RAG 论文复现
+        description:
+          type: string
+          description: 项目描述
+          example: 使用 RAG 技术复现论文代码
+        topic:
+          type: string
+          description: 研究方向
+          example: 检索增强生成、向量数据库、语义检索
+          maxLength: 500
+          minLength: 0
+      required:
+      - name
+      - topic
+    ApiResponseListProjectDTO:
+      type: object
+      description: 统一 API 响应包装
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: 响应状态码，200 表示成功
+          example: 200
+        message:
+          type: string
+          description: 响应消息
+          example: success
+        data:
+          type: array
+          description: 响应数据，类型为泛型，根据具体接口确定
+          items:
+            $ref: "#/components/schemas/ProjectDTO"
+        timestamp:
+          type: string
+          format: date-time
+          description: 响应时间戳
+          example: 2026-04-19T12:00:00
+    ApiResponsePagePaperDTO:
+      type: object
+      description: 统一 API 响应包装
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: 响应状态码，200 表示成功
+          example: 200
+        message:
+          type: string
+          description: 响应消息
+          example: success
+        data:
+          $ref: "#/components/schemas/PagePaperDTO"
+          description: 响应数据，类型为泛型，根据具体接口确定
+        timestamp:
+          type: string
+          format: date-time
+          description: 响应时间戳
+          example: 2026-04-19T12:00:00
+    OrderItem:
+      type: object
+      properties:
+        column:
+          type: string
+        asc:
+          type: boolean
+    PagePaperDTO:
+      type: object
+      properties:
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaperDTO"
+        total:
+          type: integer
+          format: int64
+        size:
+          type: integer
+          format: int64
+        current:
+          type: integer
+          format: int64
+        orders:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItem"
+          writeOnly: true
+        optimizeCountSql:
+          $ref: "#/components/schemas/PagePaperDTO"
+        searchCount:
+          $ref: "#/components/schemas/PagePaperDTO"
+        optimizeJoinOfCountSql:
+          type: boolean
+          writeOnly: true
+        maxLimit:
+          type: integer
+          format: int64
+          writeOnly: true
+        countId:
+          type: string
+          writeOnly: true
+        pages:
+          type: integer
+          format: int64
+          deprecated: true
+    PaperDTO:
+      type: object
+      description: 论文信息
+      properties:
+        id:
+          type: string
+          description: 论文ID
+          example: paper-001
+        projectId:
+          type: string
+          description: 所属项目ID
+          example: proj-001
+        source:
+          type: string
+          description: 论文来源
+          example: arxiv
+        sourceId:
+          type: string
+          description: 来源论文ID
+          example: 2401.12345
+        arxivId:
+          type: string
+          description: arXiv 论文ID
+          example: 2401.12345
+        title:
+          type: string
+          description: 论文标题
+          example: Attention Is All You Need
+        abstractText:
+          type: string
+          description: 论文摘要
+        authors:
+          type: array
+          description: 作者列表
+          example:
+          - "Vaswani, A."
+          - "Shazeer, N."
+          - "Parmar, N."
+          items:
+            type: string
+        publishDate:
+          type: string
+          format: date
+          description: 发表日期
+          example: 2023-06-15
+        citationCount:
+          type: integer
+          format: int32
+          description: 引用次数
+          example: 50000
+        influenceScore:
+          type: number
+          format: double
+          description: 影响力评分
+          example: 0.95
+        hasCode:
+          type: boolean
+          description: 是否有开源代码
+          example: true
+        codeUrl:
+          type: string
+          description: 代码仓库URL
+          example: https://github.com/example/repo
+        pdfUrl:
+          type: string
+          description: PDF下载URL
+          example: https://arxiv.org/pdf/2401.12345
+        category:
+          type: string
+          description: 论文分类
+          example: cs.CL
+    ApiResponsePaperDTO:
+      type: object
+      description: 统一 API 响应包装
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: 响应状态码，200 表示成功
+          example: 200
+        message:
+          type: string
+          description: 响应消息
+          example: success
+        data:
+          $ref: "#/components/schemas/PaperDTO"
+          description: 响应数据，类型为泛型，根据具体接口确定
+        timestamp:
+          type: string
+          format: date-time
+          description: 响应时间戳
+          example: 2026-04-19T12:00:00
+    ApiResponseTaskStatusDTO:
+      type: object
+      description: 统一 API 响应包装
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: 响应状态码，200 表示成功
+          example: 200
+        message:
+          type: string
+          description: 响应消息
+          example: success
+        data:
+          $ref: "#/components/schemas/TaskStatusDTO"
+          description: 响应数据，类型为泛型，根据具体接口确定
+        timestamp:
+          type: string
+          format: date-time
+          description: 响应时间戳
+          example: 2026-04-19T12:00:00
+    TaskStatusDTO:
+      type: object
+      description: 异步任务状态信息
+      properties:
+        taskId:
+          type: string
+          description: 任务ID
+          example: task-abc123
+        taskType:
+          type: string
+          description: "任务类型: SEARCH(检索), ANALYSIS(分析)"
+          example: ANALYSIS
+        projectId:
+          type: string
+          description: 所属项目ID
+          example: proj-001
+        status:
+          type: string
+          description: "任务状态: PENDING(等待中)/RUNNING(运行中)/COMPLETED(已完成)/FAILED(失败)"
+          example: RUNNING
+        progress:
+          type: integer
+          format: int32
+          description: 任务进度 (0-100)
+          example: 50
+        stage:
+          type: string
+          description: 当前阶段描述
+          example: 正在执行交叉分析
+        message:
+          type: string
+          description: 状态消息
+          example: 任务执行中
+    AnalysisResult:
+      type: object
+      description: 分析结果 (数据库实体，以JSON字符串形式存储)
+      properties:
+        id:
+          type: string
+          description: 主键ID
+          example: 2045561441716543500
+        createTime:
+          type: string
+          format: date-time
+        updateTime:
+          type: string
+          format: date-time
+        isDeleted:
+          type: integer
+          format: int32
+        projectId:
+          type: string
+          description: 所属项目ID
+          example: 1
+        gaps:
+          type: string
+          description: 研究差距 JSON字符串
+        basePapers:
+          type: string
+          description: 基础论文推荐 JSON字符串
+        innovationPts:
+          type: string
+          description: 创新点 JSON字符串
+    ApiResponseAnalysisResult:
+      type: object
+      description: 统一 API 响应包装
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: 响应状态码，200 表示成功
+          example: 200
+        message:
+          type: string
+          description: 响应消息
+          example: success
+        data:
+          $ref: "#/components/schemas/AnalysisResult"
+          description: 响应数据，类型为泛型，根据具体接口确定
+        timestamp:
+          type: string
+          format: date-time
+          description: 响应时间戳
+          example: 2026-04-19T12:00:00

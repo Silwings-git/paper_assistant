@@ -1,0 +1,33 @@
+{
+  "name": "paper-assistant-frontend",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "fetch:api": "curl -s http://localhost:8080/v3/api-docs.yaml -o openapi/openapi.yaml",
+    "generate:api": "npm run fetch:api && openapi-ts",
+    "generate:api:local": "openapi-ts"
+  },
+  "dependencies": {
+    "@stomp/stompjs": "^7.0.0",
+    "axios": "^1.7.9",
+    "element-plus": "^2.9.1",
+    "pinia": "^2.3.0",
+    "sockjs-client": "^1.6.1",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@hey-api/client-axios": "^0.9.1",
+    "@hey-api/openapi-ts": "^0.96.0",
+    "@types/node": "^22.0.0",
+    "@types/sockjs-client": "^1.5.4",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "typescript": "~5.7.0",
+    "vite": "^6.0.0",
+    "vue-tsc": "^2.2.0"
+  }
+}

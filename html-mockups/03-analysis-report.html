@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分析报告 - Paper Assistant</title>
+<style>
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-card: #ffffff;
+    --bg-hover: #f1f3f5;
+    --bg-evidence: #f9fafb;
+    --border-color: #e5e7eb;
+    --border-light: #f0f0f0;
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --text-muted: #9ca3af;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --accent-light: rgba(37,99,235,0.08);
+    --danger: #dc2626;
+    --danger-light: rgba(220,38,38,0.08);
+    --success: #16a34a;
+    --success-light: rgba(22,163,74,0.08);
+    --warning: #d97706;
+    --warning-light: rgba(217,119,6,0.08);
+    --purple: #7c3aed;
+    --purple-light: rgba(124,58,237,0.08);
+    --pink: #db2777;
+    --pink-light: rgba(219,39,119,0.08);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --radius-sm: 8px;
+    --radius-md: 10px;
+    --radius-lg: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .header {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px; height: 56px;
+    background: var(--bg-primary); border-bottom: 1px solid var(--border-color);
+  }
+  .header-logo { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600; cursor: pointer; color: var(--text-primary); }
+  .header-logo svg { color: var(--accent); }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 18px; font-size: 14px; font-weight: 500;
+    border: none; border-radius: var(--radius-md);
+    cursor: pointer; transition: all 0.15s ease; font-family: inherit;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-ghost { background: transparent; color: var(--text-secondary); }
+  .btn-ghost:hover { background: var(--bg-hover); }
+  .btn-outline { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); }
+  .btn-outline:hover { background: var(--bg-hover); border-color: #d1d5db; }
+  .btn-sm { padding: 5px 12px; font-size: 13px; border-radius: var(--radius-sm); }
+
+  .breadcrumb {
+    display: flex; align-items: center; gap: 8px;
+    padding: 16px 48px; font-size: 13px; color: var(--text-muted);
+    max-width: 1400px; margin: 0 auto;
+  }
+  .breadcrumb a { color: var(--text-secondary); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--accent); }
+  .breadcrumb .sep { color: var(--text-muted); }
+  .breadcrumb .current { color: var(--text-primary); font-weight: 500; }
+
+  .page { max-width: 1400px; margin: 0 auto; padding: 0 48px 80px; }
+
+  /* ===== Report Header ===== */
+  .report-header {
+    padding: 28px 0 20px; border-bottom: 1px solid var(--border-color);
+    margin-bottom: 48px; display: flex; align-items: flex-start; justify-content: space-between;
+  }
+  .report-header h1 { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+  .report-header-meta { font-size: 14px; color: var(--text-secondary); display: flex; align-items: center; gap: 14px; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 500; white-space: nowrap;
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .badge-analyzed { background: var(--purple-light); color: var(--purple); }
+  .badge-analyzed .badge-dot { background: var(--purple); }
+
+  /* ===== Section ===== */
+  .report-section { margin-bottom: 64px; }
+  .report-section:last-child { margin-bottom: 0; }
+  .section-label { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+  .section-label-num {
+    width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;
+    background: var(--accent-light); color: var(--accent);
+  }
+  .section-label h2 { font-size: 18px; font-weight: 600; }
+
+  /* ===== Gap Cards ===== */
+  .gap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .gap-card {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg); padding: 24px;
+    display: flex; flex-direction: column; gap: 14px;
+    transition: all 0.2s; box-shadow: var(--shadow-sm);
+  }
+  .gap-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-color: #d1d5db; }
+
+  .gap-category {
+    display: inline-flex; align-items: center; padding: 3px 10px;
+    border-radius: 999px; font-size: 12px; font-weight: 500; align-self: flex-start;
+  }
+  .gap-cat-explore { background: var(--accent-light); color: var(--accent); }
+  .gap-cat-contradict { background: var(--warning-light); color: var(--warning); }
+  .gap-cat-method { background: var(--purple-light); color: var(--purple); }
+  .gap-cat-data { background: var(--pink-light); color: var(--pink); }
+
+  .gap-desc { font-size: 14px; line-height: 1.65; }
+  .gap-evidence {
+    font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+    padding: 12px 14px; background: var(--bg-evidence);
+    border-radius: var(--radius-sm); border-left: 3px solid var(--accent);
+  }
+  .gap-evidence-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
+  .gap-papers { display: flex; flex-wrap: wrap; gap: 6px; }
+  .gap-paper-link {
+    display: inline-flex; align-items: center; padding: 4px 10px;
+    background: var(--bg-secondary); border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm); font-size: 12px; color: var(--accent);
+    text-decoration: none; transition: all 0.15s;
+  }
+  .gap-paper-link:hover { background: var(--bg-hover); }
+
+  /* ===== Recommendations ===== */
+  .rec-banner {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 18px; margin-bottom: 20px;
+    background: var(--purple-light); border: 1px solid rgba(124,58,237,0.12);
+    border-radius: var(--radius-md); font-size: 14px; color: var(--purple);
+  }
+  .rec-list { display: flex; flex-direction: column; gap: 16px; }
+  .rec-card {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg); padding: 24px;
+    display: flex; flex-direction: column; gap: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .rec-card-header { display: flex; align-items: flex-start; gap: 14px; }
+  .rec-rank {
+    width: 28px; height: 28px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-sm); font-size: 13px; font-weight: 700;
+    background: var(--accent-light); color: var(--accent);
+  }
+  .rec-rank.gold { background: rgba(217,119,6,0.1); color: var(--warning); }
+  .rec-title { font-size: 15px; font-weight: 600; line-height: 1.4; }
+  .rec-authors { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+  .rec-meta { display: flex; gap: 14px; font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .rec-reason { font-size: 14px; line-height: 1.65; padding: 14px 16px; background: var(--bg-evidence); border-radius: var(--radius-sm); }
+  .rec-reason-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
+  .rec-innovation { font-size: 14px; color: var(--purple); line-height: 1.6; }
+  .rec-innovation-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
+  .rec-card-actions { display: flex; gap: 10px; margin-top: 4px; }
+
+  /* ===== Innovation Cards ===== */
+  .innovation-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .innovation-card {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg); padding: 24px;
+    display: flex; flex-direction: column; gap: 14px;
+    position: relative; overflow: hidden;
+    transition: all 0.2s; box-shadow: var(--shadow-sm);
+  }
+  .innovation-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-color: #d1d5db; }
+  .innovation-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .innovation-card.diff-low::before { background: var(--success); }
+  .innovation-card.diff-mid::before { background: var(--warning); }
+  .innovation-card.diff-high::before { background: var(--danger); }
+
+  .innovation-desc { font-size: 14px; line-height: 1.65; }
+  .innovation-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .innovation-tag { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 500; }
+  .tag-diff-low { background: var(--success-light); color: var(--success); }
+  .tag-diff-mid { background: var(--warning-light); color: var(--warning); }
+  .tag-diff-high { background: var(--danger-light); color: var(--danger); }
+  .tag-type { background: var(--accent-light); color: var(--accent); }
+
+  .innovation-ref { font-size: 12px; color: var(--text-secondary); line-height: 1.5; padding: 10px 12px; background: var(--bg-evidence); border-radius: var(--radius-sm); }
+  .innovation-ref-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 1024px) {
+    .page { padding: 0 20px 48px; }
+    .breadcrumb { padding: 14px 20px; }
+    .header { padding: 0 20px; }
+    .gap-grid { grid-template-columns: 1fr; }
+    .innovation-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo" onclick="window.location.href='01-dashboard.html'">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+    Paper Assistant
+  </div>
+</header>
+
+<nav class="breadcrumb">
+  <a href="01-dashboard.html">项目列表</a>
+  <span class="sep">/</span>
+  <a href="02-project-detail.html">大语言模型推理优化</a>
+  <span class="sep">/</span>
+  <span class="current">分析报告</span>
+</nav>
+
+<div class="page">
+
+  <div class="report-header">
+    <div>
+      <h1>大语言模型推理优化</h1>
+      <div class="report-header-meta">
+        <span>LLM inference optimization, speculative decoding, KV cache compression</span>
+        <span class="badge badge-analyzed"><span class="badge-dot"></span>分析完成</span>
+      </div>
+    </div>
+    <a href="02-project-detail.html" class="btn btn-outline">返回项目</a>
+  </div>
+
+  <!-- Section 1 -->
+  <section class="report-section">
+    <div class="section-label">
+      <span class="section-label-num">1</span>
+      <h2>研究空白</h2>
+    </div>
+    <div class="gap-grid">
+      <div class="gap-card">
+        <span class="gap-category gap-cat-method">方法学局限</span>
+        <div class="gap-desc">当前推测解码方法大多依赖于一个独立的草稿模型，这引入了额外的内存开销和调度复杂度。现有方法缺乏在主模型内部直接生成草稿 token 的轻量级机制。</div>
+        <div>
+          <div class="gap-evidence-label">支撑证据</div>
+          <div class="gap-evidence">SpecInfer 使用独立的草稿模型，需要额外 1.2B 参数的显存占用；EAGLE 虽然共享了部分参数，但仍需独立的解码头。</div>
+        </div>
+        <div class="gap-papers">
+          <a class="gap-paper-link" href="#">SpecInfer</a>
+          <a class="gap-paper-link" href="#">EAGLE</a>
+          <a class="gap-paper-link" href="#">Medusa</a>
+        </div>
+      </div>
+      <div class="gap-card">
+        <span class="gap-category gap-cat-contradict">矛盾结论</span>
+        <div class="gap-desc">关于 KV cache 压缩对生成品质的影响，不同论文的结论存在分歧。部分研究表明 50% 压缩率下性能无明显下降，而另一部分研究在长文本场景下观察到显著退化。</div>
+        <div>
+          <div class="gap-evidence-label">支撑证据</div>
+          <div class="gap-evidence">H2O (NeurIPS 2023) 报告在 PG-19 数据集上 60% 压缩率下 ppl 损失 &lt; 0.1；而 SnapKV (ICLR 2024) 在 Needle-in-Haystack 测试中发现同等压缩率下长距离检索准确率下降 23%。</div>
+        </div>
+        <div class="gap-papers">
+          <a class="gap-paper-link" href="#">H2O</a>
+          <a class="gap-paper-link" href="#">SnapKV</a>
+        </div>
+      </div>
+      <div class="gap-card">
+        <span class="gap-category gap-cat-explore">未探索领域</span>
+        <div class="gap-desc">现有推理优化研究主要关注自回归解码阶段，对 prefill 阶段的优化关注不足，特别是在长上下文场景下的注意力计算加速。</div>
+        <div>
+          <div class="gap-evidence-label">支撑证据</div>
+          <div class="gap-evidence">在已分析的 20 篇论文中，仅 3 篇涉及 prefill 阶段优化，且都聚焦于 FlashAttention 的变体，缺乏针对 KV cache 初始构建阶段的系统优化。</div>
+        </div>
+        <div class="gap-papers">
+          <a class="gap-paper-link" href="#">FlashDecoding++</a>
+          <a class="gap-paper-link" href="#">vLLM</a>
+        </div>
+      </div>
+      <div class="gap-card">
+        <span class="gap-category gap-cat-data">数据集不足</span>
+        <div class="gap-desc">推理性能评估过度依赖标准基准（如 HumanEval、GSM8K），缺乏针对真实生产场景的推理负载测试集，特别是多用户并发场景下的吞吐-延迟权衡数据。</div>
+        <div>
+          <div class="gap-evidence-label">支撑证据</div>
+          <div class="gap-evidence">18/20 篇论文仅报告单请求 batch=1 的延迟指标，未覆盖在线服务中常见的动态 batch 场景。</div>
+        </div>
+        <div class="gap-papers">
+          <a class="gap-paper-link" href="#">Orca</a>
+          <a class="gap-paper-link" href="#">DistServe</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2 -->
+  <section class="report-section">
+    <div class="section-label">
+      <span class="section-label-num">2</span>
+      <h2>Base 论文推荐</h2>
+    </div>
+    <div class="rec-list">
+      <div class="rec-card">
+        <div class="rec-card-header">
+          <span class="rec-rank gold">1</span>
+          <div>
+            <div class="rec-title">EAGLE: Speculative Sampling Requires Rethinking Feature Uncertainty</div>
+            <div class="rec-authors">Y. Li, F. Wei, C. Zhang, H. Zhang · ICML 2024</div>
+            <div class="rec-meta"><span>引用: 342</span><span>arXiv: 2401.15077</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="rec-reason-label">推荐理由</div>
+          <div class="rec-reason">EAGLE 通过共享主干网络参数来减少草稿模型的显存开销，这一设计方向与"方法学局限"中识别的问题高度契合。该论文提供了良好的基线实现，在此基础上可以进一步探索参数共享的边界。</div>
+        </div>
+        <div>
+          <div class="rec-innovation-label">建议创新方向</div>
+          <div class="rec-innovation">将 EAGLE 的共享参数机制扩展为动态可配置的草稿生成层，根据输入序列的复杂度自适应调整草稿生成的深度。</div>
+        </div>
+        <div class="rec-card-actions">
+          <button class="btn btn-primary btn-sm">设为 Base 论文</button>
+          <button class="btn btn-outline btn-sm">查看原文</button>
+        </div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-card-header">
+          <span class="rec-rank">2</span>
+          <div>
+            <div class="rec-title">H2O: Heavy-Hitter Oracle for Efficient Generative Inference of Large Language Models</div>
+            <div class="rec-authors">Z. Liu, et al. · NeurIPS 2023</div>
+            <div class="rec-meta"><span>引用: 587</span><span>arXiv: 2306.14048</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="rec-reason-label">推荐理由</div>
+          <div class="rec-reason">H2O 提出了一种基于重要度评估的 KV cache 驱逐策略，其方法简洁且易于实现。在与 SnapKV 的矛盾结论中，H2O 的方案在短文本场景表现优异，适合以此为起点探索自适应压缩策略。</div>
+        </div>
+        <div>
+          <div class="rec-innovation-label">建议创新方向</div>
+          <div class="rec-innovation">结合 H2O 的驱逐策略与 SnapKV 的局部敏感机制，设计一种上下文长度感知的自适应 KV cache 压缩方案。</div>
+        </div>
+        <div class="rec-card-actions">
+          <button class="btn btn-primary btn-sm">设为 Base 论文</button>
+          <button class="btn btn-outline btn-sm">查看原文</button>
+        </div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-card-header">
+          <span class="rec-rank">3</span>
+          <div>
+            <div class="rec-title">vLLM: Easy, Fast, and Cheap LLM Serving with PagedAttention</div>
+            <div class="rec-authors">W. Kwon, Z. Li, et al. · 2023</div>
+            <div class="rec-meta"><span>引用: 891</span><span>GitHub: 18k+ stars</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="rec-reason-label">推荐理由</div>
+          <div class="rec-reason">vLLM 是目前最流行的 LLM 推理框架，其 PagedAttention 机制有效解决了 KV cache 的内存碎片问题。作为"数据集不足"中提到的系统性评估缺失的切入点，vLLM 的开源生态适合进行生产场景下的基准测试。</div>
+        </div>
+        <div>
+          <div class="rec-innovation-label">建议创新方向</div>
+          <div class="rec-innovation">在 vLLM 基础上构建面向真实生产场景的动态 batch 推理基准，研究不同并发模式下的吞吐-延迟最优配置。</div>
+        </div>
+        <div class="rec-card-actions">
+          <button class="btn btn-primary btn-sm">设为 Base 论文</button>
+          <button class="btn btn-outline btn-sm">查看原文</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3 -->
+  <section class="report-section">
+    <div class="section-label">
+      <span class="section-label-num">3</span>
+      <h2>创新点</h2>
+    </div>
+    <div class="innovation-grid">
+      <div class="innovation-card diff-low">
+        <div class="innovation-tags">
+          <span class="innovation-tag tag-diff-low">低难度</span>
+          <span class="innovation-tag tag-type">方法改进</span>
+        </div>
+        <div class="innovation-desc">在 EAGLE 的基础上引入动态草稿深度控制：根据当前 token 的预测不确定性（entropy），自适应决定生成草稿 token 的数量（1-5 个），而非固定的草稿长度。</div>
+        <div>
+          <div class="innovation-ref-label">关联 Base 论文</div>
+          <div class="innovation-ref">EAGLE (ICML 2024) · Speculative Sampling Requires Rethinking Feature Uncertainty</div>
+        </div>
+        <div>
+          <div class="innovation-ref-label">对应研究空白</div>
+          <div class="innovation-ref">方法学局限 — 草稿模型参数共享效率</div>
+        </div>
+      </div>
+      <div class="innovation-card diff-mid">
+        <div class="innovation-tags">
+          <span class="innovation-tag tag-diff-mid">中难度</span>
+          <span class="innovation-tag tag-type">方法改进</span>
+        </div>
+        <div class="innovation-desc">设计上下文长度感知的 KV cache 压缩策略：当上下文 &lt; 4K 时使用 H2O 驱逐策略，当上下文 &gt; 4K 时切换至 SnapKV 的局部+全局混合策略，平滑过渡以避免性能断崖。</div>
+        <div>
+          <div class="innovation-ref-label">关联 Base 论文</div>
+          <div class="innovation-ref">H2O (NeurIPS 2023) · Heavy-Hitter Oracle for Efficient Generative Inference</div>
+        </div>
+        <div>
+          <div class="innovation-ref-label">对应研究空白</div>
+          <div class="innovation-ref">矛盾结论 — KV cache 压缩效果的分歧</div>
+        </div>
+      </div>
+      <div class="innovation-card diff-high">
+        <div class="innovation-tags">
+          <span class="innovation-tag tag-diff-high">高难度</span>
+          <span class="innovation-tag tag-type">新应用</span>
+        </div>
+        <div class="innovation-desc">在 vLLM 框架上构建动态 batch 推理评估平台：模拟多用户并发场景，收集不同 batch size、序列长度组合下的吞吐/延迟数据，并基于这些数据训练一个轻量级的配置推荐模型。</div>
+        <div>
+          <div class="innovation-ref-label">关联 Base 论文</div>
+          <div class="innovation-ref">vLLM (2023) · Easy, Fast, and Cheap LLM Serving with PagedAttention</div>
+        </div>
+        <div>
+          <div class="innovation-ref-label">对应研究空白</div>
+          <div class="innovation-ref">数据集不足 — 缺乏真实场景推理基准</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+</body>
+</html>

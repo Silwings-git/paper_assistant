@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: paper-assistant
+  profiles:
+    active: dev
+  config:
+    import: optional:classpath:application-${spring.profiles.active}.yml

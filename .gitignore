@@ -1,0 +1,69 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# Java / Spring Boot
+**/target/
+*.class
+*.jar
+*.war
+*.log
+hs_err_pid*
+replay_pid*
+
+# Rust
+**/target/
+*.rs.bk
+
+# Vue / Node.js
+**/node_modules/
+**/dist/
+*.local
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+
+# Docker data volumes (persistent data, do not track)
+docker/data/
+volumes/
+
+# Application logs
+logs/
+
+# Session artifacts / Claude Code temp files
+*.tmp.md
+.notes.md
+????-??-??-??????-*.txt
+
+# Claude / AI assistant
+.claude/
+MEMORY.md
+
+# Documentation drafts (not for version control)
+docs/
+
+# Docker Compose overrides (project-specific customizations)
+docker-compose.override.yml
+
+# Maven wrapper (optional, some prefer not to track)
+.mvn/wrapper/maven-wrapper.properties
+
+# Test output / coverage
+**/coverage/
+
+# Frontend type-check / lint cache
+**/.eslintcache
+**/.turbo/

@@ -1,0 +1,53 @@
+services:
+  postgres:
+    build: ./docker/postgres
+    container_name: paper-assistant-pg
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker/data/postgresql:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    container_name: paper-assistant-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./docker/data/redis:/data
+    command: redis-server --appendonly yes
+
+  backend:
+    build: ./paper-assistant-web
+    container_name: paper-assistant-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - PAPER_ASSISTANT_LLM_KEY=${PAPER_ASSISTANT_LLM_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/api/v1/projects || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  frontend:
+    build:
+      context: ./paper-assistant-frontend
+      args:
+        - BACKEND_URL=http://backend:8080
+    container_name: paper-assistant-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
